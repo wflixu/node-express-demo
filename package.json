@@ -1,0 +1,40 @@
+{
+  "name": "node_express",
+  "version": "1.0.0",
+  "description": "learn node_express",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dzlixu/node_express.git"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "lx",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dzlixu/node_express/issues"
+  },
+  "homepage": "https://github.com/dzlixu/node_express#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-logger": "0.0.3",
+    "express3-handlebars": "^0.5.2",
+    "loadtest": "^2.3.0",
+    "morgan": "^1.9.0"
+  },
+  "devDependencies": {
+    "ajv": "^6.2.0",
+    "chai": "^4.1.2",
+    "eslint": "^4.18.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-chai-expect": "^1.1.1",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-mocha": "^4.12.1",
+    "mocha": "^5.0.1"
+  }
+}
