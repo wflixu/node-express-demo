@@ -1,8 +1,21 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var formidable = require('formidable');
+upload = require('jquery-file-upload-middleware');
+
+
 
 // 设置视图引擎
-var handlebars = require('express3-handlebars').create({ defaultLayout: 'main' });
+var handlebars = require('express3-handlebars').create({
+    defaultLayout: 'main',
+    helpers: {
+        section: function (name, options) {
+            if (!this._section) this._section = {};
+            this._section[name] = options.fn(this);
+            return null;
+        }
+    }
+});
 var app = express();
 var fortune = require('./lib/fortune.js');
 app.engine('handlebars', handlebars.engine);
@@ -15,16 +28,49 @@ app.disable('x-powered-by');
 
 // 设置静态目录
 app.use(express.static(__dirname + '/public'));
+
+// bodyParser
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
 
 
+
+
 app.use(function (req, res, next) {
     res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
     next();
 });
+
+// upload第一种用法
+// upload.configure({
+//     uploadDir: __dirname + '/public/uploads',
+//     uploadUrl: '/uploads',
+//     imageVersions: {
+//         thumbnail: {
+//             width: 80,
+//             height: 80
+//         }
+//     }
+// });
+// app.use('/upload', upload.fileHandler());
+
+// fileupload第二种用法
+
+app.use('/upload', function(req, res, next){
+    // console.log(111111111111);
+    upload.fileHandler({
+        uploadDir: function () {
+            return __dirname + '/public/uploads/'
+        },
+        uploadUrl: function () {
+            return '/uploads'
+        }
+    })(req, res, next);
+});
+
+
 
 app.get('/', function (req, res) {
 
@@ -37,6 +83,53 @@ app.get('/', function (req, res) {
     // res.send(s);
 
 });
+
+app.get('/fileupload',function(req,res){
+    res.render('fileupload');
+})
+
+app.get('/newsletter', function (req, res) {
+    res.render('newsletter', { csrf: 'csrf token go here' })
+});
+app.post('/process', function (req, res) {
+    //  console.log('Form (from querystring):'+req.query.form);
+    //  console.log('csrf token form hidden form fielf:'+req.body._csrf);
+    //  console.log('Name (from visible form field):'+req.body.name);
+    //  console.log('Email (from visible form field):'+req.body.email);
+    console.log(req.xhr);
+    if (req.xhr || req.accepts('json,html') === 'json') {
+        res.send({ success: true });
+    } else {
+        res.redirect(303, '/thank-you');
+    };
+
+});
+
+
+
+app.get('/contest/vacation-photo', function (req, res) {
+    var now = new Date();
+    res.render('contest/vacation-photo', {
+        year: now.getFullYear(), month: now.getMonth()
+    });
+});
+
+app.post('/contest/vacation-photo/:year/:month', function (req, res) {
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        if (err) return res.redirect(303, '/error');
+        console.log('received fields:');
+        console.log(fields);
+        console.log('received files:');
+        console.log(files);
+        res.redirect(303, '/thank-you');
+    });
+});
+
+
+
+
+
 app.get('/about', function (req, res) {
     res.render('about', {
         fortune: fortune.getFortune(),
@@ -60,7 +153,9 @@ app.get('/headers', function (req, res) {
     }
     res.send(s);
 });
-
+app.get('/thank-you', function (req, res) {
+    res.render('thank');
+});
 
 
 app.get('/error', function (req, res) {
@@ -132,9 +227,9 @@ app.get('/api/tour', function (req, res) {
 });
 app.post('/api/tour/:id', function (req, res) {
     console.log(req.params.id);
-    var restxt='';
-    for(var k in req.session){
-        restxt +=req.session[k]+'\n';
+    var restxt = '';
+    for (var k in req.session) {
+        restxt += req.session[k] + '\n';
     }
     res.type('text');
     res.send(restxt);
@@ -154,7 +249,7 @@ app.delete('/api/tour/:id', function (req, res) {
     //         res.json({ error: 'no such tour exists.' })
     //     }
     // }
-    res.json({session:req.session});
+    res.json({ session: req.session });
 });
 
 app.use(function (req, res) {
@@ -168,7 +263,7 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(app.get('port'), function () {
-    console.log('Express started in '+ app.get('env')+' on http://localhost:' + app.get('port') + ':press ctrl +cc to terminate');
+    console.log('Express started in ' + app.get('env') + ' on http://localhost:' + app.get('port') + ':press ctrl +cc to terminate');
 });
 
 
