@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var formidable = require('formidable');
 upload = require('jquery-file-upload-middleware');
+var credentials = require('./src/credentials');
 
 
 
@@ -34,6 +35,15 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+app.use(require('cookie-parser')(credentials.cookieSecret));
+app.use(require('express-session')({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true }
+  }));
+
+
 
 
 
@@ -43,7 +53,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-upload第一种用法
+// upload第一种用法
 upload.configure({
     uploadDir: __dirname + '/public/uploads',
     uploadUrl: '/uploads',
@@ -70,10 +80,20 @@ app.use('/upload', upload.fileHandler());
 //     })(req, res, next);
 // });
 
-
+app.use(function (req, res, next) {
+    res.locals.flash = res.session.flash;
+    delete req.session.flash;
+    next();
+});
 
 app.get('/', function (req, res) {
-
+    // cookie
+    req.session.userName = "anonymous";
+    var colorScheme = req.session.colorScheme || "dark";
+    res.cookie('monster', 'nom nom');
+    res.cookie('signed_monster', 'nom nom', { signed: true });
+    console.log("monster:" + req.cookies.monster);
+    console.log("signed_monster:" + req.signedCookies.signed_monster);
     res.render('home');
     // res.set('Content-Type', 'text/html');
     // var s = '';
@@ -83,20 +103,60 @@ app.get('/', function (req, res) {
     // res.send(s);
 
 });
+app.get('/cookietest', function (req, res) {
+    // cookie
+    console.log("monster:" + req.cookies.monster);
+    console.log("signed_monster:" + req.cookies.signed_monster);
 
-app.get('/fileupload',function(req,res){
+    res.render('cookietest');
+
+});
+
+app.get('/fileupload', function (req, res) {
     res.render('fileupload');
 })
 
 app.get('/newsletter', function (req, res) {
-    res.render('newsletter', { csrf: 'csrf token go here' })
+    var name = req.body.name || '', email = req.body.email || "";
+    if (!email.match(VALID_EMAIL_REGEX)) {
+        if (req.xhr) return res.json({ error: "invalid name email address" })
+        req.session.flash = {
+            type: 'danger',
+            intro: 'validatioin error',
+            message: 'the email address you entered was not valid.'
+        };
+        return res.redirect(303, 'newsletter/archive');
+    }
+    new NewsletterSignup({ name: name, email: email }).save(function (err) {
+        if (err) {
+            if (req.xhr) return res.json({ error: 'Database error.' });
+            req.session.flash = {
+                type: 'danger',
+                intro: 'Database error!',
+                message: 'There was a database error; please try again later.',
+            }
+            return res.redirect(303, '/newsletter/archive');
+        }
+        if (req.xhr) return res.json({ success: true });
+        req.session.flash = {
+            type: 'success',
+            intro: 'Thank you!',
+            message: 'You have now been signed up for the newsletter.',
+        };
+        return res.redirect(303, '/newsletter/archive');
+    });
 });
+
+
+
+
 app.post('/process', function (req, res) {
+
     //  console.log('Form (from querystring):'+req.query.form);
     //  console.log('csrf token form hidden form fielf:'+req.body._csrf);
     //  console.log('Name (from visible form field):'+req.body.name);
     //  console.log('Email (from visible form field):'+req.body.email);
-    console.log(req.xhr);
+    // console.log(req.xhr);
     if (req.xhr || req.accepts('json,html') === 'json') {
         res.send({ success: true });
     } else {
