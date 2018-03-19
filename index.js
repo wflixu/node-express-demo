@@ -43,32 +43,32 @@ app.use(function (req, res, next) {
     next();
 });
 
-// upload第一种用法
-// upload.configure({
-//     uploadDir: __dirname + '/public/uploads',
-//     uploadUrl: '/uploads',
-//     imageVersions: {
-//         thumbnail: {
-//             width: 80,
-//             height: 80
-//         }
-//     }
-// });
-// app.use('/upload', upload.fileHandler());
-
-// fileupload第二种用法
-
-app.use('/upload', function(req, res, next){
-    // console.log(111111111111);
-    upload.fileHandler({
-        uploadDir: function () {
-            return __dirname + '/public/uploads/'
-        },
-        uploadUrl: function () {
-            return '/uploads'
+upload第一种用法
+upload.configure({
+    uploadDir: __dirname + '/public/uploads',
+    uploadUrl: '/uploads',
+    imageVersions: {
+        thumbnail: {
+            width: 80,
+            height: 80
         }
-    })(req, res, next);
+    }
 });
+app.use('/upload', upload.fileHandler());
+
+// // fileupload第二种用法
+
+// app.use('/upload', function(req, res, next){
+//     // console.log(111111111111);
+//     upload.fileHandler({
+//         uploadDir: function () {
+//             return __dirname + '/public/uploads/'
+//         },
+//         uploadUrl: function () {
+//             return '/uploads'
+//         }
+//     })(req, res, next);
+// });
 
 
 
