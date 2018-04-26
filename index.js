@@ -18,12 +18,13 @@ var handlebars = require("express-handlebars").create({
     }
   }
 });
+var app = express();
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
 
 // 设置端口
 app.set("port", process.env.PORT || 3300);
-// app.disable("x-powered-by");
+app.disable("x-powered-by");
 
 // 设置静态目录
 app.use(express.static(__dirname + "/public"));
@@ -257,12 +258,15 @@ app.get("/newsletter", function(req, res) {
     return res.redirect(303, "/newsletter/archive");
   });
 });
-app.get("/form", function(req, res) {
-  res.render("chap8/form");
-});
+
 app.post("/process", function(req, res) {
+  //  console.log('Form (from querystring):'+req.query.form);
+  //  console.log('csrf token form hidden form fielf:'+req.body._csrf);
+  //  console.log('Name (from visible form field):'+req.body.name);
+  //  console.log('Email (from visible form field):'+req.body.email);
+  // console.log(req.xhr);
   if (req.xhr || req.accepts("json,html") === "json") {
-    res.send({ success: true, name: req.body.name });
+    res.send({ success: true });
   } else {
     res.redirect(303, "/thank-you");
   }
@@ -273,6 +277,50 @@ app.get("/contest/vacation-photo", function(req, res) {
   res.render("contest/vacation-photo", {
     year: now.getFullYear(),
     month: now.getMonth()
+  });
+});
+
+// 文件持久化
+var dataDir = __dirname + "/data";
+var photoDir = dataDir + "photoDir";
+fs.existsSync(dataDir) || fs.mkdirSync(dataDir);
+fs.existsSync(photoDir) || fs.mkdirSync(photoDir);
+function saveContestEntry(contestName, email, year, month, photoPath) {
+  // TODO……这个稍后再做
+}
+
+app.post("/upload/:year/:month", function(req, res) {
+  var form = new formidable.IncomingForm();
+  form.parse(req, function(err, fields, files) {
+    if (err) return res.redirect(303, "/error");
+    if (err) {
+      res.session.flash = {
+        type: "danger",
+        intro: "Oops!",
+        message:
+          "There was an error processing your submission. " +
+          "Pelase try again."
+      };
+      return res.redirect(303, "/contest/vacation-photo");
+    }
+    var photo = files.photo;
+    var dir = vacationPhotoDir + "/" + Date.now();
+    var path = dir + "/" + photo.name;
+    fs.mkdirSync(dir);
+    fs.renameSync(photo.path, dir + "/" + photo.name);
+    saveContestEntry(
+      "vacation-photo",
+      fields.email,
+      req.params.year,
+      req.params.month,
+      path
+    );
+    req.session.flash = {
+      type: "success",
+      intro: "Good luck!",
+      message: "You have been entered into the contest."
+    };
+    return res.redirect(303, "/contest/vacation-photo/entries");
   });
 });
 
@@ -432,7 +480,6 @@ app.delete("/api/tour/:id", function(req, res) {
 });
 
 app.use(function(req, res) {
-  res.status(400);
   res.render("404");
 });
 
