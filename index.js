@@ -24,7 +24,7 @@ app.set("view engine", "handlebars");
 
 // 设置端口
 app.set("port", process.env.PORT || 3300);
-app.disable("x-powered-by");
+// app.disable("x-powered-by");
 
 // 设置静态目录
 app.use(express.static(__dirname + "/public"));
@@ -36,6 +36,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+
 app.use(require("cookie-parser")(credentials.cookieSecret));
 app.use(
   require("express-session")({
@@ -179,11 +180,25 @@ app.get("/", function(req, res) {
   // }
   // res.send(s);
 });
+
+//请求头部信息
+app.get("/headers", function(req, res) {
+  res.set("Content-Type", "text/plain");
+  var s = "";
+  for (var name in req) {
+    try {
+      s += name + ":" + req[name] + "\n";
+    } catch (error) {
+      continue;
+    }
+  }
+  res.send(s);
+});
+
 app.get("/cookietest", function(req, res) {
   // cookie
   console.log("monster:" + req.cookies.monster);
   console.log("signed_monster:" + req.cookies.signed_monster);
-
   res.render("cookietest");
 });
 
