@@ -4,7 +4,7 @@ var formidable = require('formidable');
 upload = require('jquery-file-upload-middleware');
 var credentials = require('./src/credentials');
 
-
+console.log(__dirname);
 
 // 设置视图引擎
 var handlebars = require('express3-handlebars').create({
@@ -41,7 +41,7 @@ app.use(require('express-session')({
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true }
-  }));
+}));
 
 
 
@@ -80,11 +80,95 @@ app.use('/upload', upload.fileHandler());
 //     })(req, res, next);
 // });
 
-app.use(function (req, res, next) {
-    res.locals.flash = res.session.flash;
-    delete req.session.flash;
-    next();
-});
+// app.use(function (req, res, next) {
+//     res.locals.flash = res.session.flash;
+//     delete req.session.flash;
+//     next();
+// });
+// 日志
+switch(app.get('env')){
+    case 'development':
+    app.use(require('morgan')('dev'));
+    break;
+    case 'production':
+    app.use(require('express-logger')({
+        path:__dirname+'log/requests.log'
+    }));
+    break;
+
+    
+}
+
+
+
+// app.use(function (req, res, next) {
+//     console.log('\n\nALLWAYS');
+//     next();
+// });
+
+// app.get('/a', function (req, res) {
+//     console.log('/a: 路由终止');
+//     res.send('a');
+// });
+// app.get('/a', function (req, res) {
+//     console.log('/a: 永远不会调用');
+// });
+// app.get('/b', function (req, res, next) {
+//     console.log('/b: 路由未终止');
+//     next();
+// });
+// app.use(function (req, res, next) {
+//     console.log('SOMETIMES');
+//     next();
+// });
+// app.get('/b', function (req, res, next) {
+//     console.log('/b (part 2): 抛出错误');
+//     throw new Error('b 失败');
+// });
+
+// app.use('/b', function (err, req, res, next) {
+//     console.log('/b 检测到错误并传递');
+//     next(err);
+// });
+// app.get('/c', function (err, req) {
+//     console.log('/c: 抛出错误');
+//     throw new Error('c 失败');
+// });
+// app.use('/c', function (err, req, res, next) {
+//     console.log('/c: 检测到错误但不传递');
+//     next();
+// });
+
+// app.use(function (err, req, res, next) {
+//     console.log('检测到未处理的错误: ' + err.message);
+//     res.send('500 - 服务器错误');
+// });
+
+// app.use(function (req, res) {
+//     console.log('未处理的路由');
+//     res.send('404 - 未找到');
+// });
+
+// app.listen(3000, function () {
+//     console.log('监听端口3000');
+// });
+
+
+
+
+
+// app.use(function(req,res,next){
+//    console.log('process request for " '+req.url+'"');
+//    next();
+// });
+
+// app.use(function(req,res,next){
+//      console.log('terminating request ');
+//      res.send('thanks for playing'); 
+// });
+// app.use(function(){
+//     console.log('whoops,i will never get called!');
+// });
 
 app.get('/', function (req, res) {
     // cookie
