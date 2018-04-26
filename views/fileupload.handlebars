@@ -1,0 +1,47 @@
+<div>
+    <span class="btn btn-default btn-file">
+
+        <span class="btn btn-success fileinput-button">
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>Select files...</span>
+            <input id="fileupload" type="file" name="files[]" multiple>
+        </span>
+        {{!-- upload
+        <input type="file" name="files[]" id="filePhoto" class="form-control " required accept="image/*" data-url="/upload" multiple> --}}
+
+    </span>
+    <div id="files">
+    </div>
+    <div id="progress" class="progress">
+        <div class="progress-bar progress-bar-success"></div>
+    </div>
+
+</div>
+
+{{#section 'pagescript'}}
+<script src="/vendor/jqfu/js/jquery.ui.widget.js"></script>
+<script src="/vendor/jqfu/js/jquery.iframe-transport.js"></script>
+<script src="/vendor/jqfu/js/jquery.fileupload.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#fileupload').fileupload({
+            url: "/upload",
+            dataType: 'json',
+            done: function (e, data) {
+                console.log(data);
+                $.each(data.result.files, function (index, file) {
+                    $('<p/>').text(file.name).appendTo('#files');
+                });
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .progress-bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+</script> {{/section}}

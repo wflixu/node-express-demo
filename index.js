@@ -52,6 +52,7 @@ app.use(function(req, res, next) {
   next();
 });
 
+// jquery-file-upload-middleware
 // upload第一种用法
 upload.configure({
   uploadDir: __dirname + "/public/uploads",
@@ -63,40 +64,38 @@ upload.configure({
     }
   }
 });
-app.use("/upload", upload.fileHandler());
+// // // fileupload第二种用法
+// app.use("/upload", upload.fileHandler());
+// // app.use('/upload', function(req, res, next){
+// //     // console.log(111111111111);
+// //     upload.fileHandler({
+// //         uploadDir: function () {
+// //             return __dirname + '/public/uploads/'
+// //         },
+// //         uploadUrl: function () {
+// //             return '/uploads'
+// //         }
+// //     })(req, res, next);
+// // });
 
-// // fileupload第二种用法
-
-// app.use('/upload', function(req, res, next){
-//     // console.log(111111111111);
-//     upload.fileHandler({
-//         uploadDir: function () {
-//             return __dirname + '/public/uploads/'
-//         },
-//         uploadUrl: function () {
-//             return '/uploads'
-//         }
-//     })(req, res, next);
-// });
-
-// app.use(function (req, res, next) {
-//     res.locals.flash = res.session.flash;
-//     delete req.session.flash;
-//     next();
-// });
-// 日志
-switch (app.get("env")) {
-  case "development":
-    app.use(require("morgan")("dev"));
-    break;
-  case "production":
-    app.use(
-      require("express-logger")({
-        path: __dirname + "log/requests.log"
-      })
-    );
-    break;
-}
+// // app.use(function (req, res, next) {
+// //     res.locals.flash = res.session.flash;
+// //     delete req.session.flash;
+// //     next();
+// // });
+// // 日志
+// switch (app.get("env")) {
+//   case "development":
+//     app.use(require("morgan")("dev"));
+//     break;
+//   case "production":
+//     app.use(
+//       require("express-logger")({
+//         path: __dirname + "log/requests.log"
+//       })
+//     );
+//     break;
+// }
 
 // app.use(function (req, res, next) {
 //     console.log('\n\nALLWAYS');
@@ -201,8 +200,30 @@ app.get("/cookietest", function(req, res) {
   res.render("cookietest");
 });
 
+/**
+ * 文件上传 formidable
+ */
 app.get("/fileupload", function(req, res) {
-  res.render("fileupload");
+  var now = new Date();
+  res.render("chap8/fileupload", {
+    year: now.getFullYear(),
+    month: now.getMonth()
+  });
+});
+
+var formidable = require("formidable");
+
+app.post("/upload/:year/:month", function(req, res) {
+  console.log("fileu");
+  var form = new formidable.IncomingForm();
+  form.parse(req, function(err, fields, files) {
+    if (err) return res.redirect(303, "/error");
+    console.log("received fields:");
+    console.log(fields);
+    console.log("received files:");
+    console.log(files);
+    res.redirect(303, "/thank-you");
+  });
 });
 
 app.get("/newsletter", function(req, res) {
@@ -236,15 +257,12 @@ app.get("/newsletter", function(req, res) {
     return res.redirect(303, "/newsletter/archive");
   });
 });
-
+app.get("/form", function(req, res) {
+  res.render("chap8/form");
+});
 app.post("/process", function(req, res) {
-  //  console.log('Form (from querystring):'+req.query.form);
-  //  console.log('csrf token form hidden form fielf:'+req.body._csrf);
-  //  console.log('Name (from visible form field):'+req.body.name);
-  //  console.log('Email (from visible form field):'+req.body.email);
-  // console.log(req.xhr);
   if (req.xhr || req.accepts("json,html") === "json") {
-    res.send({ success: true });
+    res.send({ success: true, name: req.body.name });
   } else {
     res.redirect(303, "/thank-you");
   }

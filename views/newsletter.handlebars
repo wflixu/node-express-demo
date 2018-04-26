@@ -21,7 +21,7 @@
 
     </form>
 </div>
-{{#section 'jquery'}}
+{{#section 'pagescript'}}
 <script>
     $(document).ready(function () {
         $(".newsletterForm").on('submit', function (evt) {
@@ -35,14 +35,13 @@
                     if (data.success) {
                         $container.html('<h2>Thank You success </h2>');
                     } else {
-                         $container.html('There was a problem');
+                        $container.html('There was a problem');
                     }
 
-                },error:function(){
+                }, error: function () {
                     $container.html('There was a problem');
                 }
             });
         });
     });
-</script>
-{{/section}}
+</script> {{/section}}

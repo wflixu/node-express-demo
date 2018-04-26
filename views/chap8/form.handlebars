@@ -1,0 +1,14 @@
+<form class="form-horizontal" role="form" action="/process" method="POST" enctype="">
+    <input type="hidden" name="hush" value="hidden ,but notsecret">
+    <div>
+        <label for="name">you name:</label>
+        <input type="text" id="name" name="name">
+    </div>
+
+    <div>
+        <button id="btn">submit</button>
+    </div>
+</form>
+<div class="show"></div>
+{{#section 'pagescript'}}
+<script src="js/form.js"></script> {{/section}}
