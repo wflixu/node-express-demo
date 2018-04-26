@@ -4,7 +4,8 @@ var formidable = require("formidable");
 upload = require("jquery-file-upload-middleware");
 var credentials = require("./src/credentials");
 
-console.log(__dirname);
+var app = express();
+var fortune = require("./lib/fortune.js");
 
 // 设置视图引擎
 var handlebars = require("express-handlebars").create({
@@ -17,8 +18,6 @@ var handlebars = require("express-handlebars").create({
     }
   }
 });
-var app = express();
-var fortune = require("./lib/fortune.js");
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", "handlebars");
 
